@@ -95,19 +95,7 @@ url = f"https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&or
 response = requests.get(url)
 data = response.json()
 
-list_of_results = []
-
-while True:
-    if not data.get("results"):
-        break
-    list_of_results.extend(data["results"])
-    if not data.get("next_url"):
-        break
-    next_url = f"{data['next_url']}&apiKey={POLYGON_API_KEY}"
-    response = requests.get(next_url)
-    data = response.json()
-
-df = pd.DataFrame(list_of_results)
+df = pd.DataFrame(data["results"])
 
 # Print per-column details and suggested CREATE TABLE DDL
 print_snowflake_schema_suggestion(df, table_name="TICKERS")

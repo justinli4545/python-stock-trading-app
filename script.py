@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 
 import requests
-import pandas as pd
+import time
 import datetime
+import pandas as pd
 
 from snowflake.connector import connect
 from snowflake.connector.pandas_tools import write_pandas
@@ -19,6 +20,7 @@ LIMIT = 1000
 url = f"https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&order=asc&limit={LIMIT}&sort=ticker&apiKey={POLYGON_API_KEY}"
 
 response = requests.get(url)
+time.sleep(12)
 data = response.json()
 
 list_of_results = []
@@ -31,6 +33,7 @@ while True:
         break
     next_url = f"{data['next_url']}&apiKey={POLYGON_API_KEY}"
     response = requests.get(next_url)
+    time.sleep(12)
     data = response.json()
 
 df = pd.DataFrame(list_of_results)
@@ -45,5 +48,5 @@ conn = connect(
 )
 
 success, nchunks, nrows, _ = write_pandas(
-    conn, df, "tickers", use_logical_type=True
+    conn, df, "tickers", auto_create_table=True, use_logical_type=True 
 )
