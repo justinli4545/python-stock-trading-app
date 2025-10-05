@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 
 import requests
 import pandas as pd
+import decimal
 
 from snowflake.connector import connect
 from snowflake.connector.pandas_tools import write_pandas
