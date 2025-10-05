@@ -2,10 +2,17 @@ import os
 from dotenv import load_dotenv
 
 import requests
-import polars as pl
+import pandas as pd
+import datetime
+
+from snowflake.connector import connect
+from snowflake.connector.pandas_tools import write_pandas
 
 load_dotenv()
 POLYGON_API_KEY = os.getenv("POLYGON_API_KEY")
+SNOWFLAKE_ACCOUNT = os.getenv("SNOWFLAKE_ACCOUNT")
+SNOWFLAKE_USER = os.getenv("SNOWFLAKE_USER")
+SNOWFLAKE_PASSWORD = os.getenv("SNOWFLAKE_PASSWORD")
 
 LIMIT = 1000
 
@@ -26,4 +33,17 @@ while True:
     response = requests.get(next_url)
     data = response.json()
 
-df = pl.DataFrame(list_of_results)
+df = pd.DataFrame(list_of_results)
+df["ingested_at"] = datetime.datetime.now(datetime.UTC)
+
+conn = connect(
+    account=SNOWFLAKE_ACCOUNT,
+    user=SNOWFLAKE_USER,
+    password=SNOWFLAKE_PASSWORD,
+    database="STOCK_TRADING_APP",
+    schema="PUBLIC"
+)
+
+success, nchunks, nrows, _ = write_pandas(
+    conn, df, "tickers", use_logical_type=True
+)
